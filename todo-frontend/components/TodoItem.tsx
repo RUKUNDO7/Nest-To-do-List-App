@@ -55,12 +55,12 @@ export default function TodoItem({
       exit={{ opacity: 0, x: -10 }}
       whileHover={{ scale: 1.02 }}
       className={cn(
-        'group flex items-center justify-between p-4 mb-3 rounded-2xl border transition-all duration-200',
+        'group flex items-center justify-between gap-4 p-4 rounded-2xl border transition-all duration-200',
         'bg-card text-card-foreground shadow-sm hover:shadow-md',
-        todo.status ? 'border-primary/20 bg-muted/30' : 'border-border'
+        todo.status ? 'border-primary/20 bg-muted/20' : 'border-border'
       )}
     >
-      <div className="flex items-center gap-4 flex-1">
+      <div className="flex items-center gap-4 flex-1 min-w-0">
         <motion.button
           whileTap={{ scale: 0.9 }}
           onClick={() => onUpdate(todo.id, { status: !todo.status })}
@@ -82,19 +82,34 @@ export default function TodoItem({
               onChange={(e) => setEditTitle(e.target.value)}
               onKeyDown={handleKeyDown}
               onBlur={handleSave}
-              className="flex-1 bg-transparent border-b border-primary focus:outline-none text-lg font-medium"
+              className="flex-1 bg-transparent border-b border-primary focus:outline-none text-base font-medium"
             />
           </div>
         ) : (
-          <span
-            onDoubleClick={() => setIsEditing(true)}
-            className={cn(
-              'text-lg font-medium transition-all duration-300 flex-1 cursor-text',
-              todo.status ? 'text-muted-foreground line-through' : 'text-foreground'
-            )}
-          >
-            {todo.title}
-          </span>
+          <div className="min-w-0 flex-1">
+            <span
+              onDoubleClick={() => setIsEditing(true)}
+              className={cn(
+                'text-base font-semibold transition-all duration-300 flex-1 cursor-text block truncate',
+                todo.status ? 'text-muted-foreground line-through' : 'text-foreground'
+              )}
+            >
+              {todo.title}
+            </span>
+            <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+              <span className="pill bg-muted px-2 py-0.5">
+                Task #{todo.id}
+              </span>
+              <span
+                className={cn(
+                  'pill px-2 py-0.5',
+                  todo.status ? 'bg-[var(--accent-soft)] text-[var(--accent)]' : 'bg-muted text-muted-foreground'
+                )}
+              >
+                {todo.status ? 'Done' : 'Open'}
+              </span>
+            </div>
+          </div>
         )}
       </div>
 

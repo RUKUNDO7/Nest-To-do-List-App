@@ -1,23 +1,26 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-manrope);
+  --font-mono: var(--font-jetbrains-mono);
 }
 
 :root {
-  --background: #f8fafc; /* Slate 50 */
-  --foreground: #0f172a; /* Slate 900 */
+  --background: #f5f6f8;
+  --foreground: #121826;
   --card: #ffffff;
-  --card-foreground: #0f172a;
-  --primary: #0f172a; /* Slate 900 */
+  --card-foreground: #121826;
+  --primary: #0f172a;
   --primary-foreground: #f8fafc;
-  --muted: #f1f5f9; /* Slate 100 */
-  --muted-foreground: #64748b; /* Slate 500 */
-  --border: #e2e8f0; /* Slate 200 */
-  --input: #e2e8f0;
-  --ring: #94a3b8; /* Slate 400 */
-  --radius: 0.75rem;
+  --muted: #eef1f5;
+  --muted-foreground: #667085;
+  --border: #e4e7ec;
+  --input: #e4e7ec;
+  --ring: #98a2b3;
+  --accent: #12b76a;
+  --accent-soft: #e8f9f1;
+  --warning: #f59e0b;
+  --radius: 0.9rem;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -37,12 +40,23 @@
 }
 
 body {
-  background: var(--background);
+  background: radial-gradient(1200px 800px at 10% -10%, #ffffff, transparent),
+    radial-gradient(1000px 700px at 100% 0%, #eef2ff, transparent),
+    var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Custom utilities if needed, but Tailwind 4 handles most inside @theme */
+.app-shell {
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(24px);
+  border: 1px solid var(--border);
+}
 
+.pill {
+  border-radius: 999px;
+}
+
+/* Custom utilities if needed, but Tailwind 4 handles most inside @theme */

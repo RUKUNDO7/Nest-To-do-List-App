@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { getTodos, addTodo, updateTodo, deleteTodo } from '@/lib/api';
 import TodoItem from '@/components/TodoItem';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Plus, ListTodo } from 'lucide-react';
+import { Plus, ListTodo, Search, Sparkles, AlarmClock } from 'lucide-react';
 
 type Todo = {
   id: number;
@@ -15,6 +15,8 @@ type Todo = {
 export default function Home() {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [title, setTitle] = useState('');
+  const [query, setQuery] = useState('');
+  const [filter, setFilter] = useState<'all' | 'open' | 'done'>('all');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -53,104 +55,210 @@ export default function Home() {
 
   const completedCount = todos.filter((t) => t.status).length;
   const totalCount = todos.length;
+  const openCount = totalCount - completedCount;
   const progress = totalCount === 0 ? 0 : (completedCount / totalCount) * 100;
+  const todayLabel = useMemo(
+    () =>
+      new Date().toLocaleDateString('en-US', {
+        weekday: 'long',
+        month: 'short',
+        day: 'numeric',
+      }),
+    []
+  );
+
+  const filteredTodos = useMemo(() => {
+    return todos.filter((todo) => {
+      const matchesQuery = todo.title
+        .toLowerCase()
+        .includes(query.trim().toLowerCase());
+      const matchesFilter =
+        filter === 'all' ||
+        (filter === 'open' && !todo.status) ||
+        (filter === 'done' && todo.status);
+      return matchesQuery && matchesFilter;
+    });
+  }, [todos, query, filter]);
 
   return (
-    <main className="min-h-screen py-12 px-4 bg-background transition-colors duration-300">
-      <div className="max-w-xl mx-auto space-y-8">
-        {/* Header Section */}
-        <header className="space-y-4">
-          <motion.div 
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex items-center justify-between"
-          >
-            <div>
-              <h1 className="text-4xl font-extrabold tracking-tight mb-1 text-foreground">
-                Tasks
-              </h1>
-              <p className="text-muted-foreground">
-                {totalCount === 0 
-                  ? "Let's get some work done!"
-                  : `You've completed ${completedCount} of ${totalCount} tasks.`}
-              </p>
+    <main className="min-h-screen px-4 py-10">
+      <div className="max-w-6xl mx-auto space-y-6">
+        <motion.header
+          initial={{ opacity: 0, y: -16 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="app-shell rounded-[28px] p-6 shadow-sm"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="h-11 w-11 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center shadow-sm">
+                <Sparkles size={20} />
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+                  Pulse Tasks
+                </p>
+                <h1 className="text-3xl font-semibold text-foreground">
+                  Personal Workspace
+                </h1>
+              </div>
             </div>
-            <div className="h-12 w-12 bg-primary rounded-full flex items-center justify-center text-primary-foreground shadow-lg">
-              <span className="font-bold text-lg">
-                {Math.round(progress)}%
+            <div className="flex items-center gap-3 text-sm text-muted-foreground">
+              <AlarmClock size={16} />
+              <span>{todayLabel}</span>
+              <span className="pill bg-muted px-3 py-1 text-xs font-medium text-foreground">
+                {openCount} open
               </span>
             </div>
-          </motion.div>
-
-          {/* Progress Bar */}
-          <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
-            <motion.div 
-              className="h-full bg-primary"
-              initial={{ width: 0 }}
-              animate={{ width: `${progress}%` }}
-              transition={{ duration: 0.5, ease: "circOut" }}
-            />
           </div>
-        </header>
 
-        {/* Input Form */}
-        <motion.form 
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          onSubmit={handleAdd} 
-          className="relative group"
-        >
-          <input
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="Add a new task..."
-            className="w-full p-4 pl-5 pr-14 rounded-2xl border border-input bg-card text-card-foreground shadow-sm 
-                       focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-          />
-          <button 
-            type="submit"
-            disabled={!title.trim()}
-            className="absolute right-2 top-2 bottom-2 aspect-square bg-primary text-primary-foreground rounded-xl 
-                       flex items-center justify-center hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-          >
-            <Plus size={20} strokeWidth={3} />
-          </button>
-        </motion.form>
-
-        {/* Todo List */}
-        <section>
-          {loading ? (
-            <div className="space-y-3">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="h-16 bg-muted/50 rounded-2xl animate-pulse" />
-              ))}
+          <div className="mt-5 grid gap-4 lg:grid-cols-[minmax(0,1fr)_240px]">
+            <div className="flex items-center gap-3 rounded-2xl border border-input bg-card px-4 py-3 shadow-sm">
+              <Search size={18} className="text-muted-foreground" />
+              <input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search tasks, e.g. prepare sprint demo"
+                className="w-full bg-transparent text-sm text-foreground focus:outline-none"
+              />
             </div>
-          ) : (
-            <ul className="space-y-1">
-              <AnimatePresence mode="popLayout">
-                {todos.length === 0 ? (
-                  <motion.div 
-                    initial={{ opacity: 0 }} 
-                    animate={{ opacity: 1 }}
-                    className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground"
+            <div className="flex items-center gap-2 rounded-2xl border border-input bg-card px-4 py-3 text-sm text-muted-foreground shadow-sm">
+              <div className="flex-1">
+                <p className="text-xs uppercase tracking-[0.2em]">Progress</p>
+                <p className="text-lg font-semibold text-foreground">
+                  {Math.round(progress)}% complete
+                </p>
+              </div>
+              <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center text-sm font-semibold text-foreground">
+                {completedCount}/{totalCount || 0}
+              </div>
+            </div>
+          </div>
+        </motion.header>
+
+        <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
+          <div className="space-y-4">
+            <motion.form
+              initial={{ opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 1, scale: 1 }}
+              onSubmit={handleAdd}
+              className="app-shell rounded-[26px] p-5 shadow-sm"
+            >
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="flex-1 min-w-[220px]">
+                  <label className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+                    Add task
+                  </label>
+                  <input
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="Outline Q1 roadmap review"
+                    className="mt-2 w-full rounded-2xl border border-input bg-card px-4 py-3 text-sm text-foreground shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/10"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={!title.trim()}
+                  className="mt-6 flex h-11 items-center gap-2 rounded-2xl bg-primary px-5 text-sm font-medium text-primary-foreground shadow-sm transition-all hover:bg-primary/90 disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  <Plus size={18} />
+                  Add
+                </button>
+              </div>
+              <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                {(['all', 'open', 'done'] as const).map((item) => (
+                  <button
+                    key={item}
+                    type="button"
+                    onClick={() => setFilter(item)}
+                    className={`pill px-3 py-1 font-medium transition ${
+                      filter === item
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-muted text-muted-foreground hover:text-foreground'
+                    }`}
                   >
-                    <ListTodo className="h-16 w-16 mb-4 opacity-20" />
-                    <p className="text-lg">No tasks yet.</p>
-                    <p className="text-sm">Add one above to get started.</p>
-                  </motion.div>
-                ) : (
-                  todos.map((todo) => (
-                    <TodoItem
-                      key={todo.id}
-                      todo={todo}
-                      onUpdate={handleUpdate}
-                      onDelete={handleDelete}
-                    />
-                  ))
-                )}
-              </AnimatePresence>
-            </ul>
-          )}
+                    {item === 'all' ? 'All tasks' : item === 'open' ? 'Open' : 'Done'}
+                  </button>
+                ))}
+              </div>
+            </motion.form>
+
+            <div className="app-shell rounded-[26px] p-5 shadow-sm">
+              {loading ? (
+                <div className="space-y-3">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="h-16 bg-muted/60 rounded-2xl animate-pulse" />
+                  ))}
+                </div>
+              ) : (
+                <ul className="space-y-2">
+                  <AnimatePresence mode="popLayout">
+                    {filteredTodos.length === 0 ? (
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground"
+                      >
+                        <ListTodo className="h-16 w-16 mb-4 opacity-20" />
+                        <p className="text-lg">No matching tasks.</p>
+                        <p className="text-sm">Try clearing filters or add a new one.</p>
+                      </motion.div>
+                    ) : (
+                      filteredTodos.map((todo) => (
+                        <TodoItem
+                          key={todo.id}
+                          todo={todo}
+                          onUpdate={handleUpdate}
+                          onDelete={handleDelete}
+                        />
+                      ))
+                    )}
+                  </AnimatePresence>
+                </ul>
+              )}
+            </div>
+          </div>
+
+          <aside className="space-y-4">
+            <div className="app-shell rounded-[26px] p-5 shadow-sm">
+              <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+                Overview
+              </p>
+              <div className="mt-4 space-y-3">
+                <div className="flex items-center justify-between rounded-2xl bg-card px-4 py-3 shadow-sm">
+                  <span className="text-sm text-muted-foreground">Total tasks</span>
+                  <span className="text-lg font-semibold text-foreground">
+                    {totalCount}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between rounded-2xl bg-card px-4 py-3 shadow-sm">
+                  <span className="text-sm text-muted-foreground">Open</span>
+                  <span className="text-lg font-semibold text-foreground">
+                    {openCount}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between rounded-2xl bg-card px-4 py-3 shadow-sm">
+                  <span className="text-sm text-muted-foreground">Completed</span>
+                  <span className="text-lg font-semibold text-foreground">
+                    {completedCount}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="app-shell rounded-[26px] p-5 shadow-sm">
+              <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+                Focus tips
+              </p>
+              <div className="mt-4 space-y-3 text-sm text-muted-foreground">
+                <p className="rounded-2xl bg-card px-4 py-3 shadow-sm">
+                  Keep one priority task in focus before switching context.
+                </p>
+                <p className="rounded-2xl bg-card px-4 py-3 shadow-sm">
+                  Add clear verbs so tasks feel actionable.
+                </p>
+              </div>
+            </div>
+          </aside>
         </section>
       </div>
     </main>
