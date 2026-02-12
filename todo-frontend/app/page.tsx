@@ -95,7 +95,7 @@ export default function Home() {
               </div>
               <div>
                 <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
-                  Pulse Tasks
+                  To do List App
                 </p>
                 <h1 className="text-3xl font-semibold text-foreground">
                   Personal Workspace
