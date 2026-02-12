@@ -1,7 +1,7 @@
 const API_URL = "http://localhost:3000/todos";
 
 export async function getTodos() {
-  const res = await fetch(API_URL, { cache: "no-store" });
+  const res = await fetch(`${API_URL}/todos`);
   return res.json();
 }
 
