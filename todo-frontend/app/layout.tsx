@@ -13,7 +13,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Pulse Tasks",
+  title: "To do List App",
   description: "A focused workspace for personal tasks.",
 };
 
