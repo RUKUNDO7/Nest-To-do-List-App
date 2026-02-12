@@ -8,34 +8,34 @@ export class TodosController {
     constructor(private readonly todosService: TodosService) {}
 
         @Post()
-        create(@Body() createTodoDto: CreateTodoDto) {
+        async create(@Body() createTodoDto: CreateTodoDto) {
             return this.todosService.create(createTodoDto.title);
         }
 
         @Get()
-        findAll() {
+        async findAll() {
             return this.todosService.findAll();
         }
 
         @Get('id/:id') 
-        getTodoById(@Param('id', ParseIntPipe) id: number) {
+        async getTodoById(@Param('id', ParseIntPipe) id: number) {
             return this.todosService.findById(id);
         }
 
         @Get('title/:title')
-        getTodoByTitle(@Param('title') title: string) {
+        async getTodoByTitle(@Param('title') title: string) {
             return this.todosService.findByTitle(title);
         }
 
         @Put('id/:id')
-        update(
+        async update(
             @Param('id', ParseIntPipe) id: number, 
             @Body() updateTodoDto: UpdateTodoDto) {
             return this.todosService.updateById(id, updateTodoDto);
         }
 
         @Put('title/:title')
-        updateByTitle(
+        async updateByTitle(
             @Param('title') title: string,
             @Body() updateTodoDto: UpdateTodoDto
         ) {
@@ -43,12 +43,12 @@ export class TodosController {
         }
 
         @Delete('id/:id')
-        remove(@Param('id') id: number) {
+        async remove(@Param('id') id: number) {
             return this.todosService.deleteById(id);
         }
 
         @Delete('title/:title')
-        deleteByTitle(@Param('title') title: string) {
+        async deleteByTitle(@Param('title') title: string) {
             return this.todosService.deleteByTitle(title);
         }
     }
