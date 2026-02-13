@@ -1,17 +1,10 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { getTodos, addTodo, updateTodo, deleteTodo } from '@/lib/api';
+import { getTodos, addTodo, updateTodo, deleteTodo, type Todo } from '@/lib/api';
 import TodoItem from '@/components/TodoItem';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Plus, ListTodo, Search, Sparkles, AlarmClock } from 'lucide-react';
-import IconSection from '../components/IconSection';
-
-type Todo = {
-  id: number;
-  title: string;
-  status: boolean;
-};
 
 export default function Home() {
   const [todos, setTodos] = useState<Todo[]>([]);
@@ -19,15 +12,18 @@ export default function Home() {
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<'all' | 'open' | 'done'>('all');
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     getTodos()
       .then((data) => {
         setTodos(data);
+        setError(null);
         setLoading(false);
       })
       .catch((err) => {
-        console.error('Failed to fetch todos', err);
+        console.error('Failed to fetch todos:', err);
+        setError('Could not load todos. Check backend URL, port, and CORS settings.');
         setLoading(false);
       });
   }, []);
@@ -36,22 +32,44 @@ export default function Home() {
     e.preventDefault();
     if (!title.trim()) return;
 
-    // Optimistic update could go here, but simple wait is fine for now
-    const newTodo = await addTodo(title);
-    setTodos((prev) => [...prev, newTodo]);
-    setTitle('');
+    try {
+      const newTodo = await addTodo(title);
+      setTodos((prev) => [...prev, newTodo]);
+      setTitle('');
+      setError(null);
+    } catch (err) {
+      console.error('Failed to add todo:', err);
+      setError('Could not add todo. Please try again.');
+    }
   }
 
   async function handleUpdate(id: number, updates: Partial<Todo>) {
-    setTodos((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, ...updates } : t))
-    );
-    await updateTodo(id, updates);
+    const previous = todos;
+    setTodos((prev) => prev.map((t) => (t.id === id ? { ...t, ...updates } : t)));
+
+    try {
+      const updated = await updateTodo(id, updates);
+      setTodos((prev) => prev.map((t) => (t.id === id ? updated : t)));
+      setError(null);
+    } catch (err) {
+      console.error('Failed to update todo:', err);
+      setTodos(previous);
+      setError('Could not update todo. Changes were reverted.');
+    }
   }
 
   async function handleDelete(id: number) {
+    const previous = todos;
     setTodos((prev) => prev.filter((t) => t.id !== id));
-    await deleteTodo(id);
+
+    try {
+      await deleteTodo(id);
+      setError(null);
+    } catch (err) {
+      console.error('Failed to delete todo:', err);
+      setTodos(previous);
+      setError('Could not delete todo. Changes were reverted.');
+    }
   }
 
   const completedCount = todos.filter((t) => t.status).length;
@@ -138,6 +156,12 @@ export default function Home() {
 
         <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
           <div className="space-y-4">
+            {error && (
+              <div className="app-shell rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+                {error}
+              </div>
+            )}
+
             <motion.form
               initial={{ opacity: 0, scale: 0.98 }}
               animate={{ opacity: 1, scale: 1 }}
