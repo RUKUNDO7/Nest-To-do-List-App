@@ -5,6 +5,7 @@ import { getTodos, addTodo, updateTodo, deleteTodo } from '@/lib/api';
 import TodoItem from '@/components/TodoItem';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Plus, ListTodo, Search, Sparkles, AlarmClock } from 'lucide-react';
+import IconSection from '../components/IconSection';
 
 type Todo = {
   id: number;
