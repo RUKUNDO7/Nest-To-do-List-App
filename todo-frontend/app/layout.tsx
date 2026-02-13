@@ -1,18 +1,19 @@
-import type { Metadata } from "next";
 import { Manrope, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
 const manrope = Manrope({
+  subsets: ['latin'],
   variable: "--font-manrope",
-  subsets: ["latin"],
+  display: 'swap',
 });
 
 const jetbrainsMono = JetBrains_Mono({
   variable: "--font-jetbrains-mono",
   subsets: ["latin"],
+  display: 'swap',
 });
 
-export const metadata: Metadata = {
+export const metadata = {
   title: "To do List App",
   description: "A focused workspace for personal tasks.",
 };
