@@ -1,7 +1,9 @@
-import { Module } from '@nestjs/common';
+﻿import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TodosModule } from './todos/todos.module';
+import { UsersModule } from './users/users.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -17,11 +19,13 @@ import { TodosModule } from './todos/todos.module';
         autoLoadEntities: true,
         synchronize: false,
         ssl: {
-          rejectUnauthorized: false
+          rejectUnauthorized: false,
         },
       }),
     }),
-    TodosModule, 
+    TodosModule,
+    UsersModule,
+    AuthModule,
   ],
 })
 export class AppModule {}
